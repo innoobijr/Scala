@@ -1,0 +1,8 @@
+[0m[[0m[0mdebug[0m] [0m[0mRunning TaskDef(StringSpecification, org.scalacheck.ScalaCheckFramework$$anon$3@1ecbd86c, false, [SuiteSelector])[0m
+[0m[[0m[0mdebug[0m] [0m[0mRunning TaskDef(StringSpecification-2, org.scalacheck.ScalaCheckFramework$$anon$3@1ecbd86c, false, [SuiteSelector])[0m
+[0m[[0m[0mdebug[0m] [0m[0mRunning TaskDef(StringSpecification-1, org.scalacheck.ScalaCheckFramework$$anon$3@1ecbd86c, false, [SuiteSelector])[0m
+[0m[[0m[0mdebug[0m] [0m[0mRunning TaskDef(StringSpecification-0, org.scalacheck.ScalaCheckFramework$$anon$3@1ecbd86c, false, [SuiteSelector])[0m
+[0m[[0m[0minfo[0m] [0m[0mFailed: Total 3, Failed 1, Errors 0, Passed 2[0m
+[0m[[0m[31merror[0m] [0m[0mFailed tests:[0m
+[0m[[0m[31merror[0m] [0m[0m	StringSpecification[0m
+[0m[[0m[31merror[0m] [0m[0m(Test / [31mtest[0m) sbt.TestsFailedException: Tests unsuccessful[0m

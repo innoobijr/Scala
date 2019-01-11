@@ -1,0 +1,146 @@
+By: Innocent Obi Jr
+
+Reference: "Learning Scalaz. What is polymorphism? http://eed3si9n.com/learning-scalaz/polymorphism.html
+
+**** Parametric polymorphism 
+
+~ refers to when the type of a value contains one or more (unconstrained) type variables, so that the value may adopt any type that results from subsitutiting those variables wih concrete types. 
+
+/**
+	scala> def head[A](xs: List[A]): A = xs(0)
+	head: [A](xs: List[A])A
+
+	scala> head(1 :: 2 :: Nil)
+	res0: Int = 1
+
+	scala> case class Car(make: String)
+	defined class Car
+
+	scala> head(Car("Civic") :: Car("CR-V") :: Nil)
+	res1: Car = Car(Civic)
+**/
+
+**** Subtype polymorphism
+
+scala> def plus[A](a1: A, a2: A): A = ???
+plus: [A](a1: A, a2: A)A
+
+Given the type of A, we will need a refined definition of what it mean to add. Subtyping can allow for this in scala.
+
+/**
+	trait Plus[A] {
+		def plus(a2: A): A
+	}
+
+	def plus[A <: Plus[A]](a1: A, a2: A): A = a1.plus(a2)
+
+But this would mean that Plus would need to be mixed int at the time of defining the datatype.So it cannot workd for Int or String.
+
+**/
+
+**** Ad-hoc polymorphism
+We could also provide implicit conversatio or implicit parameters for the trait
+/**
+	trait Plus[A]{
+		def plus(a1: A, a2: A): A
+	}
+
+	def plus[A: Plus](a1: A, a2: A): A = implicitly[Plus[A]].plus(a1, a2)
+**/
+
+***********************************
+MONOID
+***********************************8
+** Making sum function more general
+
+scala> def sum(xs: List[Int]): Int = xs.foldLeft(0) { _ + _ }
+sum: (xs: List[Int])Int
+
+scala> sum(List(1, 2, 3, 4))
+res3: Int = 10
+
+Monoid ~ it;s a type for which there exists a function mappend, which produces another type in the same set; and also a function that produces zero
+
+object IntMonoid {
+	def mappend(a: Int, b: Int): Int = a + b
+	def mzero: Int = 0
+	}
+** The we can write the above as
+def sum(xs: List[Int]): Int = xs.foldLeft(IntMonoid.mzero)(IntMonoid.mappend)
+
+scala> sum(List(1, 2, 3, 4))
+res5: Int = 10
+
+----
+****
+We van abstract on the type about Monoid, can define Monoid for any type A. So noew IntMonoid is a moniod on Int:
+
+scala> trait Monoid[A]{
+	def mappend(a1:A, a2: A): A
+	def mzero: A
+	}
+defined trait Monoid
+
+scala> object IntMonoid extends Monoid[Int] {
+	def mappend(a: Int, b: Int): Int =  a + b
+	def mzero: Int = 0
+	}
+defined module IntMonoid
+
+***
+
+So now we can take a List of Int and a Monoid on Int ot sum it:
+A.. def sum(xs: List[Int], m: Monoid[Int]): Int = xs.foldLeft(m.zero)(m.mappend)
+sum(List(1, 2, 3, 4), IntMonoid)
+''res: Int = 10''
+
+We can replace Int in A.. with a generic type
+def sum(xs: List[T], m: Monoid[T]): T = xs.foldLeft(m.zero)(m.mappend)
+
+Now we have to make implicit
+
+def sum(xs: List[T])(implicit m: Monoid[T]): T = xs.foldLeft(m.zero)(m.mappend)
+'''
+scala> implicit val intMonoid = IntMonoid
+intMonoid: IntMonoid.type = IntMonoid$@3387dfac
+
+scala> sum(List(1, 2, 3, 4))
+res9: Int = 10
+'''
+
+You can also write the implicit parameter as a context bound:
+
+def sum(xs: List[T])(implicit m: Monoid[T]): T = {
+	val m = implicitly[Monoid[T]]
+	xs.foldLeft(m.zero)(m.mappend)
+     }
+sum: [A](xs: List[A])(implicit evidence$1: Monoid[A])A
+
+scala> sum(List(1, 2, 3, 4))
+res10: Int = 10
+
+**BRINGING IT ALL TOGETHER
+''''
+trait Monoid[A] {
+  def mappend(a1: A, a2: A): A
+  def mzero: A
+}
+object Monoid {
+  implicit val IntMonoid: Monoid[Int] = new Monoid[Int] {
+    def mappend(a: Int, b: Int): Int = a + b
+    def mzero: Int = 0
+  }
+  implicit val StringMonoid: Monoid[String] = new Monoid[String] {
+    def mappend(a: String, b: String): String = a + b
+    def mzero: String = ""
+  }
+}
+def sum[A: Monoid](xs: List[A]): A = {
+  val m = implicitly[Monoid[A]]
+  xs.foldLeft(m.mzero)(m.mappend)
+}
+
+''''
+
+RESOURCES fon Scala's Implicits
+1. Scala Implicits: Type Classes Here I Come <http://debasishg.blogspot.com/2010/06/scala-implicits-type-classes-here-i.html>

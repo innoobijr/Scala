@@ -1,0 +1,32 @@
+*********
+Generalizing foldLeft
+*********
+
+
+object FoldLeftList {
+	def foldLeft[A, B](xs: List[A], b:B, f: (B, A) => B) = xs.foldLeft(b)(f)
+   }
+
+def sum[A: Monoid](xs: List[A]): A = {
+	val m = implicitly[Monoid[A]]
+	FoldLeftList.foldLeft(xs, m.zero, m.mappened)
+}
+
+**Now we apply the same logic we used in polymorphism to this 
+trait FoldLeft[F[_]] { //Unspecialized type
+	def foldLeft[A, B](xs: F[A], b:B, f: (B, A) => B): B
+}
+
+object FoldLeft {
+	implicit val FoldLeftList: FoldLeft[List] = new FoldLeft[List] {
+	def foldLeft[A,B](xs: List[A], b:B, f: (B, A) => B) = xs.foldLeft(b)(f)
+   }
+}
+
+def sum[M[_]: FoldLeft, A: Monoid](xs: M[A]): A = {
+	val m = implicitly[Monoid[A]]
+	val f1 = implicitly[FoldLeft[M]]
+	f1.foldLeft(xs, m.zero, m.mappend)
+}
+ 
+

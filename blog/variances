@@ -1,0 +1,62 @@
+/*
+VARIANCES IN SCALA
+ 
+  What is 'variance''?
+	Variance is the correlation of subtyping relationships of complex types and the subtyping relationships of their component types. Use of variance in a type system allows us to make intuitive xonnxctions between complex types. 
+*/
+
+(1) A COVARIANT CLASS
+class Foo[+A]
+~ For two types A and B where A is subtype of B, then List[A] is a subtype of List[B]. Consider:
+
+abstract class Animal {
+	def name: String
+}
+case class Cat(name: String) extends Animal
+case class Dog(name: String) extends Animal
+
+** Scala has in the standard library a generic immutable `sealed abstract class List[+A]`. This mean that List[Cat] is a List[Animal] and List[Dog] is a List[Animal]. 
+
+
+(2) A CONTRAVARIANT CLASS
+class Bar[-A] 
+~ For some `class Writer[-A]`, making A contravariant implies that for two types A and B where A is a subtype of B, Writer[B] is a subtypes of Writer[A]. Consider:
+
+abstract class Printer[-A]{
+	def print(value: A): Int
+}
+
+class AnimalPrinter extends Printer[Animal] {
+  def print(animal: Animal): Unit =
+    println("The animal's name is: " + animal.name)
+}
+
+class CatPrinter extends Printer[Cat] {
+  def print(cat: Cat): Unit =
+    println("The cat's name is: " + cat.name)
+}
+
+If a Printer[Cat] can print any Cat to the console, and a Print[Animal] can print any Animal to the console, then a Printer[Animal] can print any Cat to the console. The is due to the type hierarchy. However, Printer[Cat] Cannot print any Animal to the console. If we want this to not be the case (to allow Printer[Cat] to print any Animal to console, then one should make the paramter Contravariant.
+
+
+(3) INVARIANCE
+class Baz[A]
+~ This is the default in Scala. The parameters are neither covariant nor contravariant. We would want to use the in the case where we have mutable generics classes. See examples:
+
+class Container[A](value: A) {
+  private var _value: A = value
+  def getValue: A = _value
+  def setValue(value: A): Unit = {
+    _value = value
+  }
+}
+val catContainer: Container[Cat] = new Container(Cat("Felix"))
+val animalContainer: Container[Animal] = catContainer
+animalContainer.setValue(Dog("Spot"))
+val cat: Cat = catContainer.getValue // Oops, we'd end up with a Dog assigned to a Cat
+
+Resources:
+
+1. https://docs.scala-lang.org/tour/variances.html
+
+
